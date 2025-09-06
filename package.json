@@ -1,0 +1,47 @@
+{
+  "name": "sker-mcp-filesystem",
+  "version": "1.0.0",
+  "description": "Sker MCP 文件系统插件 - 提供文件和目录操作功能",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "mcpPlugin": true,
+  "author": "Sker Team",
+  "engines": {
+    "node": ">=18.0.0",
+    "sker": ">=1.1.0"
+  },
+  "mcp": {
+    "isolationLevel": "service",
+    "permissions": {
+      "parentServices": true,
+      "globalRegistration": false,
+      "fileSystemAccess": true
+    },
+    "trustLevel": "trusted"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@sker/mcp": "^1.1.0",
+    "@sker/di": "^1.0.7",
+    "zod": "^4.1.5",
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "rimraf": "^5.0.0",
+    "@types/node": "^18.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "plugin",
+    "filesystem",
+    "file-management",
+    "sker"
+  ],
+  "license": "MIT"
+}
