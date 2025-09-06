@@ -1,37 +1,53 @@
 # Sker MCP 文件系统插件
 
-一个功能全面的 Sker MCP 文件系统插件，提供文件和目录操作的完整功能集。
+一个基于 TypeScript 开发的 Sker MCP 文件系统插件，使用依赖注入和装饰器模式提供全面的文件系统操作功能。
 
 ## 功能特性
 
 ### 🛠️ 工具 (Tools)
 
-- **list-directory** - 列出目录内容，支持递归和隐藏文件显示
+- **list-directory** - 列出指定目录下的文件和子目录，支持递归模式和隐藏文件显示
 - **read-file** - 读取文件内容，支持多种编码格式
-- **write-file** - 写入文件内容，支持自动创建目录
+- **write-file** - 写入文件内容，支持自动创建目录结构
 - **create-directory** - 创建目录，支持递归创建
 - **delete-file** - 删除文件
 - **delete-directory** - 删除目录，支持递归删除
-- **copy-file** - 复制文件，支持覆盖控制
+- **copy-file** - 复制文件，支持覆盖控制和自动创建目标目录
 - **move-file** - 移动或重命名文件
-- **get-file-stats** - 获取文件或目录的详细信息
-- **search-files** - 搜索文件，支持文件名模式和内容搜索
+- **get-file-stats** - 获取文件或目录的详细信息，包括权限、时间戳等
+- **search-files** - 搜索文件，支持文件名模式匹配和内容搜索
 
 ### 📄 资源 (Resources)
 
 - **filesystem://info** - 插件信息和状态
-- **filesystem://file/{path}** - 通过路径访问文件内容的模板资源
+- **filesystem://file/{path}** - 通过路径访问文件内容的模板资源（支持 MIME 类型自动识别）
+
+## 技术特性
+
+- 🎯 **TypeScript 开发** - 类型安全的完整实现
+- 💉 **依赖注入** - 使用 @sker/di 的依赖注入容器
+- 🏗️ **装饰器模式** - 使用 @Tool 和 @Resource 装饰器
+- 📝 **Zod 验证** - 输入参数类型验证和自动文档生成
+- 🛡️ **错误处理** - 完善的异常处理和错误信息返回
+- 🔍 **MIME 类型识别** - 支持多种文件类型的 MIME 类型自动识别
 
 ## 安装
 
-1. 将插件文件放置在 Sker MCP 插件目录中：
-```bash
-cp -r sker-mcp-filesystem ~/.sker/plugins/
-```
+### 通过源码安装
 
-2. 或者使用 Sker CLI 安装：
 ```bash
-sker plugin install ./sker-mcp-filesystem
+# 克隆仓库
+git clone git@github.com:imeepos/sker-mcp-filesystem.git
+
+# 安装依赖
+cd sker-mcp-filesystem
+pnpm install
+
+# 构建项目
+pnpm run build
+
+# 安装到 Sker 插件目录
+cp -r . ~/.sker/plugins/sker-mcp-filesystem
 ```
 
 ## 配置
@@ -61,13 +77,23 @@ sker plugin install ./sker-mcp-filesystem
 ### 列出目录
 
 ```javascript
-// 列出当前目录
+// 列出当前目录（基本用法）
 {
   "tool": "list-directory",
   "arguments": {
-    "path": ".",
+    "dirPath": ".",
     "showHidden": false,
     "recursive": false
+  }
+}
+
+// 递归列出子目录
+{
+  "tool": "list-directory", 
+  "arguments": {
+    "dirPath": "./src",
+    "showHidden": true,
+    "recursive": true
   }
 }
 ```
@@ -75,11 +101,11 @@ sker plugin install ./sker-mcp-filesystem
 ### 读取文件
 
 ```javascript
-// 读取文件内容
+// 读取文本文件
 {
   "tool": "read-file",
   "arguments": {
-    "path": "./package.json",
+    "filePath": "./package.json",
     "encoding": "utf8"
   }
 }
@@ -88,11 +114,11 @@ sker plugin install ./sker-mcp-filesystem
 ### 写入文件
 
 ```javascript
-// 写入文件
+// 写入文件（自动创建目录）
 {
   "tool": "write-file",
   "arguments": {
-    "path": "./output.txt",
+    "filePath": "./output/result.txt",
     "content": "Hello, World!",
     "encoding": "utf8",
     "createDirectories": true
@@ -103,13 +129,24 @@ sker plugin install ./sker-mcp-filesystem
 ### 搜索文件
 
 ```javascript
-// 搜索所有 .js 文件
+// 按文件名模式搜索
 {
   "tool": "search-files",
   "arguments": {
     "directory": "./src",
-    "pattern": "*.js",
+    "pattern": "*.ts",
     "maxDepth": 5
+  }
+}
+
+// 按内容搜索
+{
+  "tool": "search-files",
+  "arguments": {
+    "directory": "./",
+    "pattern": "*.js",
+    "content": "import",
+    "maxDepth": 3
   }
 }
 ```
@@ -127,21 +164,30 @@ sker plugin install ./sker-mcp-filesystem
   }
 }
 
-// 移动文件
+// 移动/重命名文件
 {
   "tool": "move-file",
   "arguments": {
-    "source": "./old-name.txt",
+    "source": "./old-name.txt", 
     "destination": "./new-name.txt",
     "overwrite": false
   }
 }
 
-// 获取文件信息
+// 获取文件详细信息
 {
   "tool": "get-file-stats",
   "arguments": {
-    "path": "./important-file.txt"
+    "filePath": "./important-file.txt"
+  }
+}
+
+// 创建目录
+{
+  "tool": "create-directory",
+  "arguments": {
+    "dirPath": "./new/nested/directory",
+    "recursive": true
   }
 }
 ```
@@ -154,31 +200,79 @@ sker plugin install ./sker-mcp-filesystem
 列出指定目录下的文件和子目录。
 
 **参数:**
-- `path` (string) - 要列出的目录路径
+- `dirPath` (string, 默认: ".") - 要列出的目录路径
 - `showHidden` (boolean, 默认: false) - 是否显示隐藏文件
 - `recursive` (boolean, 默认: false) - 是否递归列出子目录
 
 **返回:**
-文件和目录的详细信息数组，包含名称、路径、类型、大小、修改时间等。
+文件和目录的详细信息数组，包含名称、路径、类型、大小、修改时间、权限等。
 
 #### read-file
 读取文件内容。
 
 **参数:**
-- `path` (string) - 要读取的文件路径
+- `filePath` (string) - 要读取的文件路径
 - `encoding` (string, 默认: "utf8") - 文件编码格式
 
 **返回:**
-包含文件内容、大小、修改时间等信息的对象。
+包含文件内容、路径、大小、修改时间、编码等信息的对象。
 
 #### write-file
 写入内容到文件。
 
 **参数:**
-- `path` (string) - 要写入的文件路径
+- `filePath` (string) - 要写入的文件路径
 - `content` (string) - 文件内容
-- `encoding` (string, 默认: "utf8") - 文件编码格式
+- `encoding` (string, 默认: "utf8") - 文件编码格式  
 - `createDirectories` (boolean, 默认: true) - 是否自动创建目录
+
+**返回:**
+写入成功的确认信息，包含文件路径、大小、修改时间等。
+
+#### create-directory
+创建目录。
+
+**参数:**
+- `dirPath` (string) - 要创建的目录路径
+- `recursive` (boolean, 默认: true) - 是否递归创建父目录
+
+#### delete-file
+删除文件。
+
+**参数:**
+- `filePath` (string) - 要删除的文件路径
+
+#### delete-directory
+删除目录。
+
+**参数:**
+- `dirPath` (string) - 要删除的目录路径
+- `recursive` (boolean, 默认: false) - 是否递归删除目录内容
+
+#### copy-file
+复制文件。
+
+**参数:**
+- `source` (string) - 源文件路径
+- `destination` (string) - 目标文件路径
+- `overwrite` (boolean, 默认: false) - 是否覆盖已存在的文件
+
+#### move-file
+移动或重命名文件。
+
+**参数:**
+- `source` (string) - 源文件路径
+- `destination` (string) - 目标文件路径
+- `overwrite` (boolean, 默认: false) - 是否覆盖已存在的文件
+
+#### get-file-stats
+获取文件或目录的详细信息。
+
+**参数:**
+- `filePath` (string) - 文件或目录路径
+
+**返回:**
+包含路径、类型、大小、时间戳、权限等详细信息。
 
 #### search-files
 搜索文件。
@@ -238,28 +332,89 @@ node test-plugin-safe.js
 
 ## 开发
 
-### 目录结构
+### 项目结构
 
 ```
 sker-mcp-filesystem/
-├── package.json          # 插件配置
-├── index.js              # 插件主文件（MCP 兼容，无 stdout 输出）
-├── test-plugin.js        # 原始测试脚本（含 console.log）
-├── test-plugin-safe.js   # 安全测试脚本（MCP 兼容）
-├── README.md             # 说明文档
+├── package.json          # 项目配置和依赖
+├── tsconfig.json         # TypeScript 配置
+├── src/
+│   └── index.ts          # 主要实现文件（TypeScript）
+├── dist/                 # 编译后的文件
+│   ├── index.js          # 编译后的 JavaScript
+│   └── index.d.ts        # 类型定义文件
+├── README.md             # 项目文档
 └── plugin.md             # Sker MCP 开发手册
 ```
 
-### 扩展功能
+### 核心实现
 
-要添加新功能，请在 `FileSystemService` 类中：
+插件使用现代 TypeScript 技术栈：
 
-1. 在 `getTools()` 方法中注册新工具
-2. 实现对应的处理方法
-3. 添加适当的输入验证和错误处理
-4. 更新测试脚本
+- **依赖注入**: `@Injectable({providedIn: 'auto'})` 自动服务注册
+- **装饰器模式**: `@Tool` 和 `@Resource` 装饰器声明功能
+- **类型安全**: Zod schema 验证和 `@Input` 装饰器
+- **错误处理**: 统一的错误处理和返回格式
 
-### 贡献
+### 添加新功能
+
+要扩展插件功能：
+
+1. 在 `FileSystemService` 类中添加新方法
+2. 使用 `@Tool` 装饰器注册工具
+3. 用 `@Input` 装饰器定义参数和验证
+4. 实现业务逻辑和错误处理
+5. 更新文档
+
+示例：
+```typescript
+@Tool({
+  name: 'my-new-tool',
+  description: '新工具描述'
+})
+async myNewTool(
+  @Input(z.string().describe('参数描述')) param: string
+) {
+  try {
+    // 业务逻辑
+    return {
+      content: [{
+        type: 'text',
+        text: JSON.stringify(result, null, 2)
+      }]
+    };
+  } catch (error) {
+    return {
+      content: [{
+        type: 'text',
+        text: `错误: ${(error as Error).message}`
+      }],
+      isError: true
+    };
+  }
+}
+```
+
+### 构建和测试
+
+```bash
+# 开发环境构建
+pnpm run dev    # 监视模式编译
+
+# 生产环境构建  
+pnpm run build
+
+# 清理构建文件
+pnpm run clean
+```
+
+### 贡献指南
+
+1. Fork 这个仓库
+2. 创建特性分支: `git checkout -b feature/amazing-feature`
+3. 提交更改: `git commit -m 'Add amazing feature'`
+4. 推送到分支: `git push origin feature/amazing-feature`
+5. 创建 Pull Request
 
 欢迎提交 Issue 和 Pull Request 来改进这个插件。
 
